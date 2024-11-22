@@ -1,1 +1,5 @@
 # LIST YOUR PYTHON3 PACKAGES HERE
+numpy==1.23.5
+tqdm
+lib-dt-state-estimation==0.0.9
+lib-dt-computer-vision==0.1.9

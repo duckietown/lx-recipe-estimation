@@ -1,15 +1,15 @@
 # syntax=docker/dockerfile:1.4
 # parameters
-ARG EXERCISE_NAME="<LX_NAME_HERE>"
-ARG DESCRIPTION="<DESCRIPTION_HERE>"
-ARG MAINTAINER="<YOUR_FULL_NAME> (<YOUR_EMAIL_ADDRESS>)"
+ARG EXERCISE_NAME="lx-estimation"
+ARG DESCRIPTION="We cover different types of filters, including Kalman Filter, Particle Filters, and the Histogram Filter"
+ARG MAINTAINER="Liam P"
 
 # ==================================================>
 # ==> Do not change the code below this line
 ARG ARCH
 ARG DISTRO=ente
 ARG DOCKER_REGISTRY=docker.io
-ARG BASE_IMAGE=<BASE_IMAGE>
+ARG BASE_IMAGE=dt-core
 ARG BASE_TAG=${DISTRO}-${ARCH}
 ARG LAUNCHER=default
 
