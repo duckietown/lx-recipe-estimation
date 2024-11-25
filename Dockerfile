@@ -7,7 +7,7 @@ ARG MAINTAINER="Liam P"
 # ==================================================>
 # ==> Do not change the code below this line
 ARG ARCH
-ARG DISTRO=ente
+ARG DISTRO=ente-lx-estimation
 ARG DOCKER_REGISTRY=docker.io
 ARG BASE_IMAGE=dt-core
 ARG BASE_TAG=${DISTRO}-${ARCH}
