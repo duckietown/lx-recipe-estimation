@@ -1,52 +1,66 @@
-# LX Recipe: <LX_TITLE_HERE>
+# LX Recipe: Estimation (`lx-estimation`)
 
-TODO: add information that is useful for instructors
+This recipe builds the images used by the [lx-estimation](https://github.com/duckietown/lx-estimation)
+Learning Experience (Kalman filter, particle filter and a histogram lane filter running on the Duckiebot).
 
-# How to Create an LX Recipe
+It targets ROS 2 (Jazzy, `rmw_zenoh_cpp`) on the `ente` distribution:
 
-The LX recipe contains components of the exercise that the student should
-not need to change and are effectively hidden from view. There are a few
-files here that will require some attention in the creation of the learning
-experience
+- the **workbench image** (`Dockerfile`) is based on `dt-ros2-commons`; it compiles the LX's `packages/`
+  with `colcon` and runs `launchers/default.sh`, i.e.
+  `ros2 launch histogram_lane_filter histogram_lane_filter_node.launch.py veh:=ROBOT`;
+- the **editor image** (`Dockerfile.vscode`) is based on `dt-vscode` with ROS 2 Jazzy and the compiled
+  `duckietown_msgs` added, so that the notebooks and the integrated terminal can talk to the robot
+  (`ros2 topic ...`, `ros2 param ...`, the `lx_ros2_tools` notebook panels).
+
+There is no remote desktop any more: everything the student needs (parameter sliders, live images and
+plots) is provided by the notebook panels in `packages/lx_ros2_tools`.
+
+## Layout
+
+```
+Dockerfile                      workbench image (base: dt-ros2-commons), only the 3 ARGs at the top are specific
+Dockerfile.vscode               editor image (base: dt-vscode + ROS 2 Jazzy), same 3 ARGs
+dependencies-apt.txt            apt deps of the workbench image
+dependencies-apt.vscode.txt     apt deps of the editor image (ROS 2 Jazzy packages)
+dependencies-py3.txt            pip deps of both images (lib-dt-computer-vision, lib-dt-state-estimation, panels)
+launchers/default.sh            `ros2 launch` of the student node
+packages/lx_ros2_tools/         shared helpers: RosSession, panels, LiveParams, image conversion, robot params
+assets/vscode/                  editor setup hooks
+assets/duckiematrix/            Duckiematrix map used by `dts code start_matrix` (see settings.yaml)
+```
+
+The student node lives in the LX repository (`packages/histogram_lane_filter`); it is an `ament_python`
+package that is compiled into the workbench image together with the recipe packages.
 
 ## Dependencies
 
-Specify any `apt` or `python` dependencies needed in the 
-[dependencies-apt.txt](./dependencies-apt.txt) and 
-[dependencies-py3.txt](./dependencies-py3.txt) respectively. 
+Specify any `apt` or `python` dependencies needed in
+[dependencies-apt.txt](./dependencies-apt.txt) / [dependencies-apt.vscode.txt](./dependencies-apt.vscode.txt)
+and [dependencies-py3.txt](./dependencies-py3.txt). The images run Python 3.12; pin only what must be pinned.
 
-## Base Image
+`dependencies-py3.txt` must keep `ipywidgets`, `ipympl` and `matplotlib`: they are needed by the notebook
+panels (`lx_ros2_tools.panel`).
 
-You need to specify a `BASE_IMAGE` in the [Dockerfile](./Dockerfile). This
-choice defines what is already in the docker image and can be used in the 
-running of the exercise.
+## Robot stack
 
-Reasonable choices could be:
+The histogram lane filter node detects and ground-projects the line segments itself from the camera
+images, so it only needs the ROS 2 robot stack (`dts stack up -R ROBOT ros2/duckiebot`: camera, wheel
+encoders, wheels driver). The `ros2-core/default` stack (lane following demo) is not required.
 
- - [`dt-commons`](https://github.com/duckietown/dt-commons): likely a good choice
-if the LX is pure python and doesn't require ROS.
- - [`dt-ros-commons`](https://github.com/duckietown/dt-ros-commons): likely
-a good choice if you would like to use ROS in a standalone fashion (i.e., 
-your exercise includes all the nodes that are needed)
- - [`dt-core`](https://github.com/duckietown/dt-core): a good choice if you 
-would like to use one or more of the nodes defined in the packages 
-in the `dt-core` repository. 
-
-Coming soon:
- - ROS2 base image
- - Machine learning base image
-
-## Duckiematrix 
+## Duckiematrix
 
 By default, each LX is compatible with the [Duckiematrix](https://docs.duckietown.com/ente/devmanual-duckiematrix/intro.html).
 See the [README in the LX template](https://github.com/duckietown/template-lx/blob/ente/README.md)
-for more details on how to deploy this capability through the `dts code` API. 
-You can define the exact configuration of the Duckiematrix environment in the 
+for more details on how to deploy this capability through the `dts code` API.
+You can define the exact configuration of the Duckiematrix environment in the
 [assets/duckiematrix](./assets/duckiematrix) directory. For more details see
 [the Duckiematrix manual](https://docs.duckietown.com/ente/devmanual-duckiematrix/intro.html).
 
-## noVNC Customization
+## Building locally
 
-It is also possible to customize the noVNC desktop. 
-TODO: add details. 
+```
+docker buildx build --load -f Dockerfile --build-context recipe=. --build-context meat=/path/to/lx-estimation \
+  --build-arg ARCH=arm64v8 --build-arg DISTRO=ente -t lx-estimation:test .
+```
 
+The same command with `-f Dockerfile.vscode` builds the editor image.
