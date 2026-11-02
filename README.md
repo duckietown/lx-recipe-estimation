@@ -44,7 +44,7 @@ panels (`lx_ros2_tools.panel`).
 ## Robot stack
 
 The histogram lane filter node detects and ground-projects the line segments itself from the camera
-images, so it only needs the ROS 2 robot stack (`dts stack up -R ROBOT ros2/duckiebot`: camera, wheel
+images, so it only needs the ROS 2 robot stack (`dts stack up -H ROBOT ros2/duckiebot`: camera, wheel
 encoders, wheels driver). The `ros2-core/default` stack (lane following demo) is not required.
 
 ## Duckiematrix
